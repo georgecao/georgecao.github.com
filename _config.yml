@@ -2,10 +2,10 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://yoursite.com
-title: My Octopress Blog
+url: http://georgecao.github.com
+title: George Cao's Blog
 subtitle: A blogging framework for hackers.
-author: Your Name
+author: George
 simple_search: http://google.com/search
 description:
 
@@ -89,8 +89,8 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name:
-disqus_show_comment_count: false
+disqus_short_name: georgecao
+disqus_show_comment_count: true
 
 # Google Analytics
 google_analytics_tracking_id:
