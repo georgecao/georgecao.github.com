@@ -9,7 +9,7 @@
   <meta name="author" content="George">
 
   
-  <meta name="description" content="Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些，（点击这里），单并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。 &hellip;">
+  <meta name="description" content="Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些1，但并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -95,48 +95,33 @@
   </header>
 
 
-  <div class="entry-content"><p>Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些，（点击这里），单并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。下面介绍一些办法用以列出所有参数，这样你在研究或者Google的时候也比较有明确的目标。</p>
+  <div class="entry-content"><p>Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些<a href="http://www.oracle.com">1</a>，但并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。下面介绍一些办法用以列出所有参数，这样你在研究或者Google的时候也比较有明确的目标。
+如果你想查看一下线上正在运行的JVM到底设置了那些参数，生效的是那些，可能用到的方法：
+1. 在Linux下用ps命令找到启动Java应用时的参数</p>
 
-<pre><code>如果你想查看一下线上正在运行的JVM到底设置了那些参数，生效的是那些，可能用到的方法：
-
-1. 在Linux下用ps命令找到启动Java应用时的参数
+<pre><code>ps -ef | grep "your java app name"
 </code></pre>
 
-<p>ps -ef | grep &#8220;your java app name&#8221;</p>
-
-<pre><code>这个命令会打出你启动Java应用时传给java命令的所有参数，你可以看到里面的JVM参数。
-
-2.直接看启动脚本，或者参数配置
-
+<p>这个命令会打出你启动Java应用时传给java命令的所有参数，你可以看到里面的JVM参数。
+2. 直接看启动脚本，或者参数配置
 你未必能找到所有设置这JVM参数的地方，容易遗漏。
-
 一般来讲以上两种办法都需要对JVM了如指掌或者非常熟悉，至少对特定的参数。
-
-
-
 其实JVM中有一个参数-XX:+PrintFlagsFinal，可以打印出几乎所有的JVM支持的参数以及他们的默认值。如果你想要查看你的Java应用到底使用了那些参数，只要在启动的时候加上这个参数就可以了。
+1. 查看你使用的JDK支持的参数</p>
 
-1.查看你使用的JDK支持的参数
+<pre><code>java -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version
 </code></pre>
 
-<p>java -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version</p>
-
-<pre><code>2.打印Java应用启用的JVM参数
-</code></pre>
-
-<p>java -XX:+PrintFlagsFinal -classpath=/path/to/your/libs MainClass</p>
-
-<pre><code>3.如果你的Java应用已经是运行状态了，你想查看某个JVM参数生效没有可以使用jinfo这个工具。比如说大名鼎鼎的G1垃圾回收器，在JDK7update3中不论是客户端(-client)还是服务器(-server)模式下都不是默认启动的。
-
+<ol>
+<li>打印Java应用启用的JVM参数
+ java -XX:+PrintFlagsFinal -classpath=/path/to/your/libs MainClass</li>
+<li>如果你的Java应用已经是运行状态了，你想查看某个JVM参数生效没有可以使用jinfo这个工具。比如说大名鼎鼎的G1垃圾回收器，在JDK7update3中不论是客户端(-client)还是服务器(-server)模式下都不是默认启动的。
 jinfo是随JDK一起发布的，使用时先用jps找到Java应用的pid。直接运行jinfo可以查看使用说明。
-</code></pre>
+ jinfo -flag UseParallelOldGC 31072
+ -XX:+UseParallelOldGC
+JDK中实用的工具还很多，可以逐个的体验一下${JAVA_HOME}/bin目录中的每个命令，有惊喜。</li>
+</ol>
 
-<p>jinfo -flag UseParallelOldGC 31072</p>
-
-<p>-XX:+UseParallelOldGC</p>
-
-<pre><code>JDK中实用的工具还很多，可以逐个的体验一下${JAVA_HOME}/bin目录中的每个命令，有惊喜。
-</code></pre>
 </div>
   
   
