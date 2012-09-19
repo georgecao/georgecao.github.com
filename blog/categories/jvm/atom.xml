@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[George Cao's Blog]]></title>
-  <link href="http://georgecao.github.com/atom.xml" rel="self"/>
+  <title><![CDATA[Category: JVM | George Cao's Blog]]></title>
+  <link href="http://georgecao.github.com/blog/categories/jvm/atom.xml" rel="self"/>
   <link href="http://georgecao.github.com/"/>
   <updated>2012-09-19T02:47:18-04:00</updated>
   <id>http://georgecao.github.com/</id>
@@ -26,12 +26,10 @@
 
 <h3>1. 在Linux下用ps命令找到启动Java应用时的参数</h3>
 
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>ps -ef | grep <span class="s2">&quot;your java app name&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这个命令会打出你启动Java应用时传给java命令的所有参数，你可以看到里面的JVM参数。</p>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+这个命令会打出你启动Java应用时传给java命令的所有参数，你可以看到里面的JVM参数。</p>
 
 <h3>2. 直接看启动脚本，或者参数配置</h3>
 
@@ -40,40 +38,27 @@
 
 <h2>查看你使用的JDK支持的参数</h2>
 
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">UnlockDiagnosticVMOptions</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">PrintFlagsFinal</span> <span class="o">-</span><span class="n">version</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <h3>打印Java应用启用的JVM参数</h3>
 
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 </pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">PrintFlagsFinal</span> <span class="o">-</span><span class="n">classpath</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">libs</span> <span class="n">MainClass</span>
-</span></code></pre></td></tr></table></div></figure>
-
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <h3>使用jinfo查看具体参数</h3>
 
 <p>如果你的Java应用已经是运行状态了，你想查看某个JVM参数生效没有可以使用jinfo这个工具。比如说大名鼎鼎的<code>G1</code>垃圾回收器，在<strong>JDK7 update 3</strong>中不论是客户端(-client)还是服务器(-server)模式下都不是默认启动的。
-<code>jinfo</code>是随JDK一起发布的，使用时先用<code>jps</code>找到Java应用的<strong>pid</strong>。直接运行<code>jinfo</code>可以查看使用说明。</p>
-
-<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<code>jinfo</code>是随JDK一起发布的，使用时先用<code>jps</code>找到Java应用的<strong>pid</strong>。直接运行<code>jinfo</code>可以查看使用说明。
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>jinfo -flag UseParallelOldGC 31072
 </span><span class='line'>-XX:+UseParallelOldGC
-</span></code></pre></td></tr></table></div></figure>
-
+</span></code></pre></td></tr></table></div></figure></notextile></div></p>
 
 <p>JDK中实用的工具还很多，可以逐个的体验一下<code>${JAVA_HOME}/bin</code>目录中的每个命令，有惊喜。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Ready to GO]]></title>
-    <link href="http://georgecao.github.com/blog/2012/09/18/ready-to-go/"/>
-    <updated>2012-09-18T05:19:00-04:00</updated>
-    <id>http://georgecao.github.com/blog/2012/09/18/ready-to-go</id>
-    <content type="html"><![CDATA[<p>Ready to Go. I mean it.</p>
 ]]></content>
   </entry>
   
