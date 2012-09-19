@@ -4,7 +4,7 @@
   <title><![CDATA[George Cao's Blog]]></title>
   <link href="http://georgecao.github.com/atom.xml" rel="self"/>
   <link href="http://georgecao.github.com/"/>
-  <updated>2012-09-19T02:18:47-04:00</updated>
+  <updated>2012-09-19T02:32:34-04:00</updated>
   <id>http://georgecao.github.com/</id>
   <author>
     <name><![CDATA[George]]></name>
@@ -18,13 +18,16 @@
     <link href="http://georgecao.github.com/blog/2012/09/18/da-yin-suo-you-de-oracle-hotspot-jvmcan-shu-ji-qi-mo-ren-zhi-hotspot-jvm-options-slash-flags/"/>
     <updated>2012-09-18T06:32:00-04:00</updated>
     <id>http://georgecao.github.com/blog/2012/09/18/da-yin-suo-you-de-oracle-hotspot-jvmcan-shu-ji-qi-mo-ren-zhi-hotspot-jvm-options-slash-flags</id>
-    <content type="html"><![CDATA[<p>Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些<a href="http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html">点此查看</a>，但并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数>，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。下面介绍一些办法用以列出所有参数，这样你在研究或者Google的时候也比较有明确的目标。
-如果你想查看一下线上正在运行的JVM到底设置了那些参数，生效的是那些，可能用到的方法：</p>
+    <content type="html"><![CDATA[<p>Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些<a href="http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html">点此查看</a>，但并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数>，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。下面介绍一些办法用以列出所有参数，这样你在研究或者Google的时候也比较有明确的目标。</p>
+
+<h2>参数查看</h2>
+
+<p>如果你想查看一下线上正在运行的JVM到底设置了那些参数，生效的是那些，可能用到的方法：</p>
 
 <h3>1. 在Linux下用ps命令找到启动Java应用时的参数</h3>
 
 <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>    ps -ef | grep <span class="s2">&quot;your java app name&quot;</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>ps -ef | grep <span class="s2">&quot;your java app name&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
@@ -37,22 +40,29 @@
 
 <h2>查看你使用的JDK支持的参数</h2>
 
-<pre><code>java -XX:+UnlockDiagnosticVMOptions -XX:+PrintFlagsFinal -version
-</code></pre>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">UnlockDiagnosticVMOptions</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">PrintFlagsFinal</span> <span class="o">-</span><span class="n">version</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <h3>打印Java应用启用的JVM参数</h3>
 
-<pre><code>java -XX:+PrintFlagsFinal -classpath=/path/to/your/libs MainClass
-</code></pre>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">PrintFlagsFinal</span> <span class="o">-</span><span class="n">classpath</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">libs</span> <span class="n">MainClass</span>
+</span></code></pre></td></tr></table></div></figure>
 
-<h3>如果你的Java应用已经是运行状态了，你想查看某个JVM参数生效没有可以使用jinfo这个工具</h3>
 
-<p>比如说大名鼎鼎的<code>G1</code>垃圾回收器，在<strong>JDK7 update 3</strong>中不论是客户端(-client)还是服务器(-server)模式下都不是默认启动的。
+<h3>使用jinfo查看具体参数</h3>
+
+<p>如果你的Java应用已经是运行状态了，你想查看某个JVM参数生效没有可以使用jinfo这个工具。比如说大名鼎鼎的<code>G1</code>垃圾回收器，在<strong>JDK7 update 3</strong>中不论是客户端(-client)还是服务器(-server)模式下都不是默认启动的。
 <code>jinfo</code>是随JDK一起发布的，使用时先用<code>jps</code>找到Java应用的<strong>pid</strong>。直接运行<code>jinfo</code>可以查看使用说明。</p>
 
-<pre><code>jinfo -flag UseParallelOldGC 31072
--XX:+UseParallelOldGC
-</code></pre>
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>jinfo -flag UseParallelOldGC 31072
+</span><span class='line'>-XX:+UseParallelOldGC
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>JDK中实用的工具还很多，可以逐个的体验一下<code>${JAVA_HOME}/bin</code>目录中的每个命令，有惊喜。</p>
 ]]></content>
