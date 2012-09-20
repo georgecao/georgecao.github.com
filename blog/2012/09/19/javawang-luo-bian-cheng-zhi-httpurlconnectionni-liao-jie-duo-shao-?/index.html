@@ -106,33 +106,34 @@
   </header>
 
 
-<div class="entry-content"><p>HttpURLConnection是Java提供用于支持HTTP协议的网络访问，用它访问一个URL的内容很方便。但是最近遇到一个问题，就是用它发送POST请求的时候总是返回502错误：Bad Gateway；但是同样的代码，同样的IDE，同样的JDK，同样的系统环境，用Apache的开源HttpClient发出同样的POST请求却是正常返回200；更诡异的是使用JDK1.6.0-14版本一切正常，返回200，但用JDK1.6.0-20/24的时候却返回了502。起初怀疑JDK出了bug，不过后来事实证明，只要你怀疑一个大的系统出了问题的时候，十有八九问题都是出在自身，只有很少的概率才出现那种状况。
+<div class="entry-content"><p>HttpURLConnection是Java提供用于支持HTTP协议的网络访问，用它访问一个URL的内容很方便。但是最近遇到一个问题，就是用它发送POST请求的时候总是返回502错误：Bad Gateway；但是同样的代码，同样的IDE，同样的JDK，同样的系统环境，用Apache的开源HttpClient发出同样的POST请求却是正常返回200；更诡异的是使用JDK1.6.0-14版本一切正常，返回200，但用JDK1.6.0-20/24的时候却返回了502.<br/>
+起初怀疑JDK出了bug，不过后来事实证明，只要你怀疑一个大的系统出了问题的时候，十有八九问题都是出在自身，只有很少的概率才出现那种状况。
 除了怀疑JDK的问题以外，还觉得是HttpURLConnection类使用不当。Google了好久，现在整理一个HttpURLConnection的使用方法如下：</p>
 
-<h3>HTTP POST和GET请求</h3>
+<h2>HTTP POST和GET请求</h2>
 
 <p>对于于http的POST和PUT请求，发出HTTP请求应该遵循的步骤：</p>
 
-<h4>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h4>
+<h3>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h3>
 
-<h4>2.调用getOutputStream方法获得OutputStream并且输出数据到输出流。</h4>
+<h3>2.调用getOutputStream方法获得OutputStream并且输出数据到输出流。</h3>
 
 <p>不管你有没有数据需要发送到服务器端，至少你要调用一下getOutputStream()方法之后忽略数据的写入；</p>
 
-<h4>3.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h4>
+<h3>3.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h3>
 
 <p>不管你需不需要服务器的反馈，这个必须调用。</p>
 
-<h3>其他请求</h3>
+<h2>其他HTTP请求</h2>
 
 <p>对于http的除了POST和PUT的其他请求（如GET，HEAD，DELETE，TRACE，OPTIONS），发出HTTP请求应该遵循的步骤：</p>
 
-<h4>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h4>
+<h3>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h3>
 
-<h4>2.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h4>
+<h3>2.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h3>
 
 <p>我们不能假定调用getOutputStream()获得OutputStream，写入数据，然后调用输出流的flush()/close()方法就把真实的http请求发送到服务器端了。<strong>事实上，调用HttpURLConnection的getInputStream()方法是唯一的发出真实请求的方法，而调用getOutputStream()方法并没有发送真实的Http请求。</strong>
-除此之外，使用HttpURLConnection的时候一定要根据请求的类型（POST，GET等）去遵循上面描述的执行顺序，比如说你已经调用共getInputStream()方法了，你在调用getOutputStream()方法的时候就抛异常了，HttpURLConnection说这是不合法的。
+除此之外，使用HttpURLConnection的时候一定要根据请求的类型（POST，GET等）去遵循上面描述的执行顺序，比如说你已经调用共getInputStream()方法了，你在调用getOutputStream()方法的时候就抛异常了，HttpURLConnection说这是不合法的。<br/>
 我遇到的诡异的问题就是发出POST请求的时候没有调用getOutputStream()方法，省略了POST/PUT请求执行顺序中的第2步导致的。同样的，如果在GET请求中调用的getOutputStream()，JDK的代码显示这个请求就自动变成POST请求了，为了向后兼容的原因也不告诉你，不抛异常。而非POST或PUT请求则直接抛异常了。从代码中也可以看出使用POST或者PUT，或者在GET请求中调用getOutputStream()是一定要设置setDOOutput(true);</p>
 
 <figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
@@ -221,8 +222,6 @@
         <a class="basic-alignment left" href="/blog/2012/09/19/java-httplian-jie-zhong-httpurlconnection-zhong-shi-yong-dai-li-proxy-ji-qi-yan-zheng-authentication/" title="Previous Post: Java Http连接中(HttpURLConnection)中使用代理(Proxy)及其验证(Authentication)">&laquo; Java Http连接中(HttpURLConnection)中使用代理(Proxy)及其验证(Authentication)</a>
       
       
-        <a class="basic-alignment right" href="/blog/2012/09/19/new-post/" title="Next Post: new-post">new-post &raquo;</a>
-      
     </p>
   </footer>
 </article>
@@ -240,10 +239,6 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2012/09/19/new-post/">new-post</a>
-      </li>
     
       <li class="post">
         <a href="/blog/2012/09/19/javawang-luo-bian-cheng-zhi-httpurlconnectionni-liao-jie-duo-shao-%3F/">Java网络编程之HttpURLConnection你了解多少？</a>

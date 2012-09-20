@@ -9,8 +9,8 @@
   <meta name="author" content="George">
 
   
-  <meta name="description" content="
-">
+  <meta name="description" content="使用Java的HttpURLConnection类可以实现HttpClient的功能，而不需要依赖任何其他类库。所有有时候大家就直接使用它来完成一些简单（或复杂）的功能。
+但是你活在伟大的{print G.F.W}后面，如果你需要访问的网站被墙了， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -107,7 +107,119 @@
   </header>
 
 
-<div class="entry-content">
+<div class="entry-content"><p>使用Java的HttpURLConnection类可以实现HttpClient的功能，而不需要依赖任何其他类库。所有有时候大家就直接使用它来完成一些简单（或复杂）的功能。<br/>
+但是你活在伟大的{print G.F.W}后面，如果你需要访问的网站被墙了，那HttpURLConnection类就会出现连接超时的错误。这时候就需要给他设置代理（Proxy）了。<br/>
+设置代理（Proxy）可以有两种方式：</p>
+
+<h3>1.通过设置系统属性(System.setPropery(String key, String value)的方式</h3>
+
+<p>首先你可以在这里看到Java支持的属性。我们可以使用其中的http.proxyHost，http.proxyPort这两个属性。顾名思义，就是分别设置代理服务器地址和代理端口。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="c1">//在你发起Http请求之前设置一下属性  </span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">&quot;http.proxyHost&quot;</span><span class="o">,</span> <span class="s">&quot;www.proxy.com&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">&quot;http.proxyPort&quot;</span><span class="o">,</span> <span class="s">&quot;8080&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>替换上面的www.proxy.com为你的代理服务器地址或IP地址，以及相应的端口为真实端口，Http连接及可以工作了。需要注意的是如果你设置了这些属性，那么所有的Http请求都会通过代理服务器。这些属性是JVM级别的，设置了以后对所有的同类请求都有效。比如上面的是关于http的，还有关于ftp的等等。<br/>
+如果你的代理服务器不需要验证，那到此就结束了。但一般都是需要验证的。但是你要是看了上面Java支持的属性列表，你就会发现那里面并没有期望中的</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">http</span><span class="o">.</span><span class="na">proxyUserName</span><span class="o">=</span><span class="n">username</span>
+</span><span class='line'>    <span class="n">http</span><span class="o">.</span><span class="na">proxyPassword</span><span class="o">=</span><span class="n">password</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这两个属性。 这时就需要java.net.Authenticator类来完成一般的Http验证。java.net.Authenticator这个类却是个抽象类，我们要使用还需要实例化一下子自己的类。如下：</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="kd">public</span> <span class="kd">class</span> <span class="nc">BasicAuthenticator</span> <span class="kd">extends</span> <span class="n">Authenticator</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">String</span> <span class="n">userName</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">String</span> <span class="n">password</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="kd">public</span> <span class="nf">BasicAuthenticator</span><span class="o">(</span><span class="n">String</span> <span class="n">userName</span><span class="o">,</span> <span class="n">String</span> <span class="n">password</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">this</span><span class="o">.</span><span class="na">userName</span> <span class="o">=</span> <span class="n">userName</span><span class="o">;</span>
+</span><span class='line'>            <span class="k">this</span><span class="o">.</span><span class="na">password</span> <span class="o">=</span> <span class="n">password</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="cm">/** </span>
+</span><span class='line'><span class="cm">         * Called when password authorization is needed.  Subclasses should </span>
+</span><span class='line'><span class="cm">         * override the default implementation, which returns null. </span>
+</span><span class='line'><span class="cm">         * </span>
+</span><span class='line'><span class="cm">         * @return The PasswordAuthentication collected from the </span>
+</span><span class='line'><span class="cm">         *         user, or null if none is provided. </span>
+</span><span class='line'><span class="cm">         */</span>
+</span><span class='line'>        <span class="nd">@Override</span>
+</span><span class='line'>        <span class="kd">protected</span> <span class="n">PasswordAuthentication</span> <span class="nf">getPasswordAuthentication</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">return</span> <span class="k">new</span> <span class="nf">PasswordAuthentication</span><span class="o">(</span><span class="n">userName</span><span class="o">,</span> <span class="n">password</span><span class="o">.</span><span class="na">toCharArray</span><span class="o">());</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>我们需要覆盖java.net.Authenticator类的getPasswordAuthentication()方法，并返回一个PasswordAuthentication实例。要使他起作用，还需要设置</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">Authenticator</span><span class="o">.</span><span class="na">setDefault</span><span class="o">(</span><span class="k">new</span> <span class="n">BasicAuthenticator</span><span class="o">(</span><span class="n">userName</span><span class="o">,</span> <span class="n">password</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这样就提供了基于Http Basic的验证，接着就可以顺畅的使用需要验证的代理了。</p>
+
+<h3>2.通过java.net.Proxy类</h3>
+
+<p>这种方式是实例化一个Proxy类提供代理服务器的信息，如端口和地址。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">Proxy</span> <span class="n">proxy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Proxy</span><span class="o">(</span><span class="n">Proxy</span><span class="o">.</span><span class="na">Type</span><span class="o">.</span><span class="na">HTTP</span><span class="o">,</span> <span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="n">port</span><span class="o">));</span>
+</span><span class='line'>    <span class="n">URLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">(</span><span class="n">proxy</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>使用代理的方式是在打开Http连接的时候同时传递一个Proxy参数。如果需要验证信息的话我们可以添加一个Http头参数来实现。</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="c1">//格式如下：  </span>
+</span><span class='line'>    <span class="s">&quot;Proxy-Authorization&quot;</span><span class="o">=</span> <span class="s">&quot;Basic Base64.encode(user:password)&quot;</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">headerKey</span> <span class="o">=</span> <span class="s">&quot;Proxy-Authorization&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">headerValue</span> <span class="o">=</span> <span class="s">&quot;Basic &quot;</span> <span class="o">+</span> <span class="n">Base64</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">user</span><span class="o">+</span><span class="s">&quot;:&quot;</span><span class="o">+</span><span class="n">password</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">conn</span><span class="o">.</span><span class="na">setRequestProperty</span><span class="o">(</span><span class="n">headerKey</span><span class="o">,</span> <span class="n">headerValue</span><span class="o">);</span>
+</span><span class='line'>    <span class="c1">//..........  </span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>其中的Base64.encode(user:password)是指把用户名和密码用冒号连接起来之后使用Base64编码后的值作为值的一部分。<br/>
+通过这种方式只影响特定的Http连接，但是需要对代码进行修改。这种方式下是否可以使用Authenticator还未做验证。</p>
 </div>
 
 
@@ -132,6 +244,12 @@
 
 <time datetime="2012-09-19T23:19:00-04:00" pubdate data-updated="true">Sep 19<span>th</span>, 2012</time>
       
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/java/'>Java</a>, <a class='category' href='/blog/categories/network/'>Network</a>
+  
+</span>
 
 
     </p>
@@ -173,10 +291,6 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
-    
-      <li class="post">
-        <a href="/blog/2012/09/19/new-post/">new-post</a>
-      </li>
     
       <li class="post">
         <a href="/blog/2012/09/19/javawang-luo-bian-cheng-zhi-httpurlconnectionni-liao-jie-duo-shao-%3F/">Java网络编程之HttpURLConnection你了解多少？</a>

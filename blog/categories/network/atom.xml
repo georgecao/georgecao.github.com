@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Network | George Cao's Blog]]></title>
   <link href="http://georgecao.github.com/blog/categories/network/atom.xml" rel="self"/>
   <link href="http://georgecao.github.com/"/>
-  <updated>2012-09-20T00:01:41-04:00</updated>
+  <updated>2012-09-20T00:17:42-04:00</updated>
   <id>http://georgecao.github.com/</id>
   <author>
     <name><![CDATA[George]]></name>
@@ -18,33 +18,34 @@
     <link href="http://georgecao.github.com/blog/2012/09/19/javawang-luo-bian-cheng-zhi-httpurlconnectionni-liao-jie-duo-shao-%3F/"/>
     <updated>2012-09-19T23:21:00-04:00</updated>
     <id>http://georgecao.github.com/blog/2012/09/19/javawang-luo-bian-cheng-zhi-httpurlconnectionni-liao-jie-duo-shao-?</id>
-    <content type="html"><![CDATA[<p>HttpURLConnection是Java提供用于支持HTTP协议的网络访问，用它访问一个URL的内容很方便。但是最近遇到一个问题，就是用它发送POST请求的时候总是返回502错误：Bad Gateway；但是同样的代码，同样的IDE，同样的JDK，同样的系统环境，用Apache的开源HttpClient发出同样的POST请求却是正常返回200；更诡异的是使用JDK1.6.0-14版本一切正常，返回200，但用JDK1.6.0-20/24的时候却返回了502。起初怀疑JDK出了bug，不过后来事实证明，只要你怀疑一个大的系统出了问题的时候，十有八九问题都是出在自身，只有很少的概率才出现那种状况。
+    <content type="html"><![CDATA[<p>HttpURLConnection是Java提供用于支持HTTP协议的网络访问，用它访问一个URL的内容很方便。但是最近遇到一个问题，就是用它发送POST请求的时候总是返回502错误：Bad Gateway；但是同样的代码，同样的IDE，同样的JDK，同样的系统环境，用Apache的开源HttpClient发出同样的POST请求却是正常返回200；更诡异的是使用JDK1.6.0-14版本一切正常，返回200，但用JDK1.6.0-20/24的时候却返回了502.<br/>
+起初怀疑JDK出了bug，不过后来事实证明，只要你怀疑一个大的系统出了问题的时候，十有八九问题都是出在自身，只有很少的概率才出现那种状况。
 除了怀疑JDK的问题以外，还觉得是HttpURLConnection类使用不当。Google了好久，现在整理一个HttpURLConnection的使用方法如下：</p>
 
-<h3>HTTP POST和GET请求</h3>
+<h2>HTTP POST和GET请求</h2>
 
 <p>对于于http的POST和PUT请求，发出HTTP请求应该遵循的步骤：</p>
 
-<h4>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h4>
+<h3>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h3>
 
-<h4>2.调用getOutputStream方法获得OutputStream并且输出数据到输出流。</h4>
+<h3>2.调用getOutputStream方法获得OutputStream并且输出数据到输出流。</h3>
 
 <p>不管你有没有数据需要发送到服务器端，至少你要调用一下getOutputStream()方法之后忽略数据的写入；</p>
 
-<h4>3.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h4>
+<h3>3.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h3>
 
 <p>不管你需不需要服务器的反馈，这个必须调用。</p>
 
-<h3>其他请求</h3>
+<h2>其他HTTP请求</h2>
 
 <p>对于http的除了POST和PUT的其他请求（如GET，HEAD，DELETE，TRACE，OPTIONS），发出HTTP请求应该遵循的步骤：</p>
 
-<h4>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h4>
+<h3>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h3>
 
-<h4>2.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h4>
+<h3>2.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h3>
 
 <p>我们不能假定调用getOutputStream()获得OutputStream，写入数据，然后调用输出流的flush()/close()方法就把真实的http请求发送到服务器端了。<strong>事实上，调用HttpURLConnection的getInputStream()方法是唯一的发出真实请求的方法，而调用getOutputStream()方法并没有发送真实的Http请求。</strong>
-除此之外，使用HttpURLConnection的时候一定要根据请求的类型（POST，GET等）去遵循上面描述的执行顺序，比如说你已经调用共getInputStream()方法了，你在调用getOutputStream()方法的时候就抛异常了，HttpURLConnection说这是不合法的。
+除此之外，使用HttpURLConnection的时候一定要根据请求的类型（POST，GET等）去遵循上面描述的执行顺序，比如说你已经调用共getInputStream()方法了，你在调用getOutputStream()方法的时候就抛异常了，HttpURLConnection说这是不合法的。<br/>
 我遇到的诡异的问题就是发出POST请求的时候没有调用getOutputStream()方法，省略了POST/PUT请求执行顺序中的第2步导致的。同样的，如果在GET请求中调用的getOutputStream()，JDK的代码显示这个请求就自动变成POST请求了，为了向后兼容的原因也不告诉你，不抛异常。而非POST或PUT请求则直接抛异常了。从代码中也可以看出使用POST或者PUT，或者在GET请求中调用getOutputStream()是一定要设置setDOOutput(true);
 <div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -84,6 +85,170 @@
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 这时候我们可以看出Java那些个以提高可读性为目的的冗长的方法名，变量名这时候变成了一种误导。还有一个问题就是JDK 1.6.0不同版本之间的行为不一致的问题，原因还是未知。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java Http连接中(HttpURLConnection)中使用代理(Proxy)及其验证(Authentication)]]></title>
+    <link href="http://georgecao.github.com/blog/2012/09/19/java-httplian-jie-zhong-httpurlconnection-zhong-shi-yong-dai-li-proxy-ji-qi-yan-zheng-authentication/"/>
+    <updated>2012-09-19T23:19:00-04:00</updated>
+    <id>http://georgecao.github.com/blog/2012/09/19/java-httplian-jie-zhong-httpurlconnection-zhong-shi-yong-dai-li-proxy-ji-qi-yan-zheng-authentication</id>
+    <content type="html"><![CDATA[<p>使用Java的HttpURLConnection类可以实现HttpClient的功能，而不需要依赖任何其他类库。所有有时候大家就直接使用它来完成一些简单（或复杂）的功能。<br/>
+但是你活在伟大的{print G.F.W}后面，如果你需要访问的网站被墙了，那HttpURLConnection类就会出现连接超时的错误。这时候就需要给他设置代理（Proxy）了。<br/>
+设置代理（Proxy）可以有两种方式：</p>
+
+<h3>1.通过设置系统属性(System.setPropery(String key, String value)的方式</h3>
+
+<p>首先你可以在这里看到Java支持的属性。我们可以使用其中的http.proxyHost，http.proxyPort这两个属性。顾名思义，就是分别设置代理服务器地址和代理端口。
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//在你发起Http请求之前设置一下属性  </span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">&quot;http.proxyHost&quot;</span><span class="o">,</span> <span class="s">&quot;www.proxy.com&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">setProperty</span><span class="o">(</span><span class="s">&quot;http.proxyPort&quot;</span><span class="o">,</span> <span class="s">&quot;8080&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+替换上面的www.proxy.com为你的代理服务器地址或IP地址，以及相应的端口为真实端口，Http连接及可以工作了。需要注意的是如果你设置了这些属性，那么所有的Http请求都会通过代理服务器。这些属性是JVM级别的，设置了以后对所有的同类请求都有效。比如上面的是关于http的，还有关于ftp的等等。<br/>
+如果你的代理服务器不需要验证，那到此就结束了。但一般都是需要验证的。但是你要是看了上面Java支持的属性列表，你就会发现那里面并没有期望中的
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">http</span><span class="o">.</span><span class="na">proxyUserName</span><span class="o">=</span><span class="n">username</span>
+</span><span class='line'><span class="n">http</span><span class="o">.</span><span class="na">proxyPassword</span><span class="o">=</span><span class="n">password</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+这两个属性。 这时就需要java.net.Authenticator类来完成一般的Http验证。java.net.Authenticator这个类却是个抽象类，我们要使用还需要实例化一下子自己的类。如下：</p>
+
+<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">BasicAuthenticator</span> <span class="kd">extends</span> <span class="n">Authenticator</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">userName</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">password</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">BasicAuthenticator</span><span class="o">(</span><span class="n">String</span> <span class="n">userName</span><span class="o">,</span> <span class="n">String</span> <span class="n">password</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">userName</span> <span class="o">=</span> <span class="n">userName</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">password</span> <span class="o">=</span> <span class="n">password</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/** </span>
+</span><span class='line'><span class="cm">     * Called when password authorization is needed.  Subclasses should </span>
+</span><span class='line'><span class="cm">     * override the default implementation, which returns null. </span>
+</span><span class='line'><span class="cm">     * </span>
+</span><span class='line'><span class="cm">     * @return The PasswordAuthentication collected from the </span>
+</span><span class='line'><span class="cm">     *         user, or null if none is provided. </span>
+</span><span class='line'><span class="cm">     */</span>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">protected</span> <span class="n">PasswordAuthentication</span> <span class="nf">getPasswordAuthentication</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">new</span> <span class="nf">PasswordAuthentication</span><span class="o">(</span><span class="n">userName</span><span class="o">,</span> <span class="n">password</span><span class="o">.</span><span class="na">toCharArray</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+我们需要覆盖java.net.Authenticator类的getPasswordAuthentication()方法，并返回一个PasswordAuthentication实例。要使他起作用，还需要设置
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">Authenticator</span><span class="o">.</span><span class="na">setDefault</span><span class="o">(</span><span class="k">new</span> <span class="n">BasicAuthenticator</span><span class="o">(</span><span class="n">userName</span><span class="o">,</span> <span class="n">password</span><span class="o">));</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+这样就提供了基于Http Basic的验证，接着就可以顺畅的使用需要验证的代理了。</p>
+
+<h3>2.通过java.net.Proxy类</h3>
+
+<p>这种方式是实例化一个Proxy类提供代理服务器的信息，如端口和地址。 <br/>
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">Proxy</span> <span class="n">proxy</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Proxy</span><span class="o">(</span><span class="n">Proxy</span><span class="o">.</span><span class="na">Type</span><span class="o">.</span><span class="na">HTTP</span><span class="o">,</span> <span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">host</span><span class="o">,</span> <span class="n">port</span><span class="o">));</span>
+</span><span class='line'><span class="n">URLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="na">openConnection</span><span class="o">(</span><span class="n">proxy</span><span class="o">);</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+使用代理的方式是在打开Http连接的时候同时传递一个Proxy参数。如果需要验证信息的话我们可以添加一个Http头参数来实现。 <br/>
+<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">//格式如下：  </span>
+</span><span class='line'><span class="s">&quot;Proxy-Authorization&quot;</span><span class="o">=</span> <span class="s">&quot;Basic Base64.encode(user:password)&quot;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">headerKey</span> <span class="o">=</span> <span class="s">&quot;Proxy-Authorization&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">headerValue</span> <span class="o">=</span> <span class="s">&quot;Basic &quot;</span> <span class="o">+</span> <span class="n">Base64</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">user</span><span class="o">+</span><span class="s">&quot;:&quot;</span><span class="o">+</span><span class="n">password</span><span class="o">);</span>
+</span><span class='line'><span class="n">conn</span><span class="o">.</span><span class="na">setRequestProperty</span><span class="o">(</span><span class="n">headerKey</span><span class="o">,</span> <span class="n">headerValue</span><span class="o">);</span>
+</span><span class='line'><span class="c1">//..........  </span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+其中的Base64.encode(user:password)是指把用户名和密码用冒号连接起来之后使用Base64编码后的值作为值的一部分。<br/>
+通过这种方式只影响特定的Http连接，但是需要对代码进行修改。这种方式下是否可以使用Authenticator还未做验证。</p>
 ]]></content>
   </entry>
   
