@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Java | George Cao's Blog]]></title>
-  <link href="http://georgecao.github.com/blog/categories/java/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Network | George Cao's Blog]]></title>
+  <link href="http://georgecao.github.com/blog/categories/network/atom.xml" rel="self"/>
   <link href="http://georgecao.github.com/"/>
   <updated>2012-09-20T00:01:41-04:00</updated>
   <id>http://georgecao.github.com/</id>
@@ -84,55 +84,6 @@
 </span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 这时候我们可以看出Java那些个以提高可读性为目的的冗长的方法名，变量名这时候变成了一种误导。还有一个问题就是JDK 1.6.0不同版本之间的行为不一致的问题，原因还是未知。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[打印所有的Oracle HotSpot JVM参数及其默认值(HotSpot JVM Options/Flags)]]></title>
-    <link href="http://georgecao.github.com/blog/2012/09/18/da-yin-suo-you-de-oracle-hotspot-jvmcan-shu-ji-qi-mo-ren-zhi-hotspot-jvm-options-slash-flags/"/>
-    <updated>2012-09-18T06:32:00-04:00</updated>
-    <id>http://georgecao.github.com/blog/2012/09/18/da-yin-suo-you-de-oracle-hotspot-jvmcan-shu-ji-qi-mo-ren-zhi-hotspot-jvm-options-slash-flags</id>
-    <content type="html"><![CDATA[<p>Java程序员有时候需要了解JVM相关的参数，不管是出于好奇或者工作需要。Oracle的文档中列出了一些<a href="http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html">点此查看</a>，但并不是全部，而且有些参数的设置会默认启用或者关闭其他一些参数>，而在某些情况下设置某个参数是不会生效的。还有些时候你想让JVM做某些事情，但是你不知道那个参数可以用。下面介绍一些办法用以列出所有参数，这样你在研究或者Google的时候也比较有明确的目标。</p>
-
-<h2>参数查看</h2>
-
-<p>如果你想查看一下线上正在运行的JVM到底设置了那些参数，生效的是那些，可能用到的方法：</p>
-
-<h3>1. 在Linux下用ps命令找到启动Java应用时的参数</h3>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>ps -ef | grep <span class="s2">&quot;your java app name&quot;</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-这个命令会打出你启动Java应用时传给java命令的所有参数，你可以看到里面的JVM参数。</p>
-
-<h3>2. 直接看启动脚本，或者参数配置</h3>
-
-<p>你未必能找到所有设置这JVM参数的地方，容易遗漏。
-一般来讲以上两种办法都需要对JVM了如指掌或者非常熟悉，至少对特定的参数。其实JVM中有一个参数<code>-XX:+PrintFlagsFinal</code>，可以打印出几乎所有的JVM支持的参数以及他们的默认值。如果你想要查看你的Java应用到底使用了那些参数，只要在启动的时候加上这个参数就可以了。</p>
-
-<h2>查看你使用的JDK支持的参数</h2>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">UnlockDiagnosticVMOptions</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">PrintFlagsFinal</span> <span class="o">-</span><span class="n">version</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h3>打印Java应用启用的JVM参数</h3>
-
-<p><div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span> <span class="o">-</span><span class="nl">XX:</span><span class="o">+</span><span class="n">PrintFlagsFinal</span> <span class="o">-</span><span class="n">classpath</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">your</span><span class="o">/</span><span class="n">libs</span> <span class="n">MainClass</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<h3>使用jinfo查看具体参数</h3>
-
-<p>如果你的Java应用已经是运行状态了，你想查看某个JVM参数生效没有可以使用jinfo这个工具。比如说大名鼎鼎的<code>G1</code>垃圾回收器，在<strong>JDK7 update 3</strong>中不论是客户端(-client)还是服务器(-server)模式下都不是默认启动的。
-<code>jinfo</code>是随JDK一起发布的，使用时先用<code>jps</code>找到Java应用的<strong>pid</strong>。直接运行<code>jinfo</code>可以查看使用说明。
-<div class='bogus-wrapper'><notextile><figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>jinfo -flag UseParallelOldGC 31072
-</span><span class='line'>-XX:+UseParallelOldGC
-</span></code></pre></td></tr></table></div></figure></notextile></div></p>
-
-<p>JDK中实用的工具还很多，可以逐个的体验一下<code>${JAVA_HOME}/bin</code>目录中的每个命令，有惊喜。</p>
 ]]></content>
   </entry>
   

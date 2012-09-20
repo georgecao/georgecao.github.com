@@ -4,7 +4,7 @@
   <title><![CDATA[George Cao's Blog]]></title>
   <link href="http://georgecao.github.com/atom.xml" rel="self"/>
   <link href="http://georgecao.github.com/"/>
-  <updated>2012-09-19T12:45:22-04:00</updated>
+  <updated>2012-09-20T00:01:41-04:00</updated>
   <id>http://georgecao.github.com/</id>
   <author>
     <name><![CDATA[George]]></name>
@@ -12,6 +12,95 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[new-post]]></title>
+    <link href="http://georgecao.github.com/blog/2012/09/19/new-post/"/>
+    <updated>2012-09-19T23:21:00-04:00</updated>
+    <id>http://georgecao.github.com/blog/2012/09/19/new-post</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java网络编程之HttpURLConnection你了解多少？]]></title>
+    <link href="http://georgecao.github.com/blog/2012/09/19/javawang-luo-bian-cheng-zhi-httpurlconnectionni-liao-jie-duo-shao-%3F/"/>
+    <updated>2012-09-19T23:21:00-04:00</updated>
+    <id>http://georgecao.github.com/blog/2012/09/19/javawang-luo-bian-cheng-zhi-httpurlconnectionni-liao-jie-duo-shao-?</id>
+    <content type="html"><![CDATA[<p>HttpURLConnection是Java提供用于支持HTTP协议的网络访问，用它访问一个URL的内容很方便。但是最近遇到一个问题，就是用它发送POST请求的时候总是返回502错误：Bad Gateway；但是同样的代码，同样的IDE，同样的JDK，同样的系统环境，用Apache的开源HttpClient发出同样的POST请求却是正常返回200；更诡异的是使用JDK1.6.0-14版本一切正常，返回200，但用JDK1.6.0-20/24的时候却返回了502。起初怀疑JDK出了bug，不过后来事实证明，只要你怀疑一个大的系统出了问题的时候，十有八九问题都是出在自身，只有很少的概率才出现那种状况。
+除了怀疑JDK的问题以外，还觉得是HttpURLConnection类使用不当。Google了好久，现在整理一个HttpURLConnection的使用方法如下：</p>
+
+<h3>HTTP POST和GET请求</h3>
+
+<p>对于于http的POST和PUT请求，发出HTTP请求应该遵循的步骤：</p>
+
+<h4>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h4>
+
+<h4>2.调用getOutputStream方法获得OutputStream并且输出数据到输出流。</h4>
+
+<p>不管你有没有数据需要发送到服务器端，至少你要调用一下getOutputStream()方法之后忽略数据的写入；</p>
+
+<h4>3.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h4>
+
+<p>不管你需不需要服务器的反馈，这个必须调用。</p>
+
+<h3>其他请求</h3>
+
+<p>对于http的除了POST和PUT的其他请求（如GET，HEAD，DELETE，TRACE，OPTIONS），发出HTTP请求应该遵循的步骤：</p>
+
+<h4>1.生成HttpURLConnection实例，并设置http请求参数或者属性；</h4>
+
+<h4>2.调用getInputStream方法发出真实的http请求，并且等待服务器的响应。</h4>
+
+<p>我们不能假定调用getOutputStream()获得OutputStream，写入数据，然后调用输出流的flush()/close()方法就把真实的http请求发送到服务器端了。<strong>事实上，调用HttpURLConnection的getInputStream()方法是唯一的发出真实请求的方法，而调用getOutputStream()方法并没有发送真实的Http请求。</strong>
+除此之外，使用HttpURLConnection的时候一定要根据请求的类型（POST，GET等）去遵循上面描述的执行顺序，比如说你已经调用共getInputStream()方法了，你在调用getOutputStream()方法的时候就抛异常了，HttpURLConnection说这是不合法的。
+我遇到的诡异的问题就是发出POST请求的时候没有调用getOutputStream()方法，省略了POST/PUT请求执行顺序中的第2步导致的。同样的，如果在GET请求中调用的getOutputStream()，JDK的代码显示这个请求就自动变成POST请求了，为了向后兼容的原因也不告诉你，不抛异常。而非POST或PUT请求则直接抛异常了。从代码中也可以看出使用POST或者PUT，或者在GET请求中调用getOutputStream()是一定要设置setDOOutput(true);</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">synchronized</span> <span class="n">OutputStream</span> <span class="nf">getOutputStream</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+</span><span class='line'>     <span class="k">if</span> <span class="o">(!</span><span class="n">doOutput</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">throw</span> <span class="k">new</span> <span class="nf">ProtocolException</span><span class="o">(</span>
+</span><span class='line'>                  <span class="s">&quot;cannot write to a URLConnection&quot;</span> <span class="o">+</span> <span class="s">&quot; if doOutput=false - call setDoOutput(true)&quot;</span><span class="o">);</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>           <span class="k">if</span> <span class="o">(</span><span class="n">method</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="s">&quot;GET&quot;</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">method</span> <span class="o">=</span> <span class="s">&quot;POST&quot;</span><span class="o">;</span> <span class="c1">// Backward compatibility</span>
+</span><span class='line'>           <span class="o">}</span>
+</span><span class='line'>           <span class="k">if</span> <span class="o">(!</span><span class="s">&quot;POST&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">method</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="s">&quot;PUT&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">method</span><span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="s">&quot;http&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">url</span><span class="o">.</span><span class="na">getProtocol</span><span class="o">()))</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="k">throw</span> <span class="k">new</span> <span class="nf">ProtocolException</span><span class="o">(</span><span class="s">&quot;HTTP method &quot;</span> <span class="o">+</span> <span class="n">method</span>
+</span><span class='line'>                                <span class="o">+</span> <span class="s">&quot; doesn&#39;t support output&quot;</span><span class="o">);</span>
+</span><span class='line'>           <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="c1">//.......</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这时候我们可以看出Java那些个以提高可读性为目的的冗长的方法名，变量名这时候变成了一种误导。还有一个问题就是JDK 1.6.0不同版本之间的行为不一致的问题，原因还是未知。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Java Http连接中(HttpURLConnection)中使用代理(Proxy)及其验证(Authentication)]]></title>
+    <link href="http://georgecao.github.com/blog/2012/09/19/java-httplian-jie-zhong-httpurlconnection-zhong-shi-yong-dai-li-proxy-ji-qi-yan-zheng-authentication/"/>
+    <updated>2012-09-19T23:19:00-04:00</updated>
+    <id>http://georgecao.github.com/blog/2012/09/19/java-httplian-jie-zhong-httpurlconnection-zhong-shi-yong-dai-li-proxy-ji-qi-yan-zheng-authentication</id>
+    <content type="html"><![CDATA[
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[打印所有的Oracle HotSpot JVM参数及其默认值(HotSpot JVM Options/Flags)]]></title>
